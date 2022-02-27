@@ -1,1 +1,1 @@
-Notes and thoughts about math and computer science.
+Hello! This is a place for me to take notes.
