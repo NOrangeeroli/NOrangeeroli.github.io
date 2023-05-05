@@ -8,7 +8,7 @@
 
 M.S. in Robotics, Cognition, Intelligence
 
-- GPA 1.4 (German Standard)^
+- GPA 1.4 (German Standard)
 
 ### Tsinghua University Sept. 2013 – Jul. 2017
 
