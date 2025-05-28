@@ -28,12 +28,19 @@ jobs:
       with: { node-version: '20' }
     - run: npm ci || npm install --save-dev postcss-cli autoprefixer postcss-import
 
-    # 3) Dart Sass (embedded) for Hugo’s SCSS
+    # Install Dart Sass (embedded) ---------------------------------
     - name: Install Dart Sass
       run: |
-        sudo apt-get update -qq
-        sudo apt-get install -y dart-sass
-        sass --embedded --version
+        VER=1.89.0                          # bump when a new release lands
+        curl -L \
+          https://github.com/sass/dart-sass/releases/download/${VER}/dart-sass-${VER}-linux-x64.tar.gz \
+          -o /tmp/dart-sass.tgz
+
+        sudo mkdir -p /usr/local/lib
+        sudo tar -xzf /tmp/dart-sass.tgz -C /usr/local/lib          # full tree
+        sudo ln -sf /usr/local/lib/dart-sass/sass /usr/local/bin/sass
+
+        sass --embedded --version      # sanity-check
 
     # 4) Hugo extended
     - uses: peaceiris/actions-hugo@v2
