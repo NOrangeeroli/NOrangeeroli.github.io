@@ -2,55 +2,51 @@ name: Build and deploy Hugo site to GitHub Pages
 
 on:
   push:
-    branches: [main]        # or master—use your default branch name
+    branches: [main]            # use your default branch
+
+# ✨ REQUIRED: give the job these three permissions
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   build-deploy:
+    environment:
+      name: github-pages        # tells GitHub this is a Pages deploy
+      url:  ${{ steps.deploy.outputs.page_url }}
+
     runs-on: ubuntu-latest
 
     steps:
-    # 1.  Fetch your repo with submodules (theme)
+    # 1) Checkout with submodules
     - uses: actions/checkout@v4
-      with:
-        submodules: true
-        fetch-depth: 0
+      with: { submodules: true, fetch-depth: 0 }
 
-    # 2.  Install Node (for PostCSS) – Hugo needs postcss-cli, autoprefixer, postcss-import
+    # 2) PostCSS tooling (Node)
     - uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-    - name: Install PostCSS plugins
-      run: |
-        npm ci || npm install --save-dev postcss-cli autoprefixer postcss-import
+      with: { node-version: '20' }
+    - run: npm ci || npm install --save-dev postcss-cli autoprefixer postcss-import
 
-    # 3.  Install Hugo Extended
-    - uses: peaceiris/actions-hugo@v2
-      with:
-        hugo-version: '0.147.6'
-        extended: true
-
+    # 3) Dart Sass (embedded) for Hugo’s SCSS
     - name: Install Dart Sass
       run: |
-        VER=1.89.0
-        curl -L \
-          https://github.com/sass/dart-sass/releases/download/${VER}/dart-sass-${VER}-linux-x64.tar.gz \
-          -o /tmp/dart-sass.tgz
+        sudo apt-get update -qq
+        sudo apt-get install -y dart-sass
+        sass --embedded --version
 
-        sudo mkdir -p /usr/local/lib
-        sudo tar -xzf /tmp/dart-sass.tgz -C /usr/local/lib     # keeps full tree
-        sudo ln -sf /usr/local/lib/dart-sass/sass /usr/local/bin/sass
+    # 4) Hugo extended
+    - uses: peaceiris/actions-hugo@v2
+      with: { hugo-version: '0.147.6', extended: true }
 
-        sass --embedded --version      # sanity-check
-
-
-    # 4.  Build the site (outputs to ./public)
+    # 5) Build site
     - run: hugo --minify
 
-    - name: Upload Pages artifact
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: ./public
+    # 6) Upload the ./public folder as a Pages artifact
+    - uses: actions/upload-pages-artifact@v3
+      with: { path: ./public }
 
-    - name: Deploy to GitHub Pages
+    # 7) Deploy that artifact
+    - id: deploy
       uses: actions/deploy-pages@v4
-      id: deployment
+
