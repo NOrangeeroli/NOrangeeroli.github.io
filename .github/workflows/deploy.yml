@@ -1,0 +1,22 @@
+name: Deploy Hugo site to GitHub Pages
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true      # pull the theme
+      - uses: peaceiris/actions-hugo@v2       # install Hugo
+        with:
+          hugo-version: '0.123.7'
+          extended: true
+      - run: hugo --minify
+      - uses: peaceiris/actions-gh-pages@v4   # publish to gh-pages
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+
