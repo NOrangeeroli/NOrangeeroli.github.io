@@ -4,3 +4,4 @@
 .hugo_build.lock
 /public/
 /resources/
+/dartsdk-macos-x64-release.zip
