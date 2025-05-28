@@ -46,12 +46,11 @@ jobs:
     # 4.  Build the site (outputs to ./public)
     - run: hugo --minify
 
-    # 5.  Deploy the ./public folder to the special *root* of the repository
-    #     (for user/org pages we publish to the same repo's *root* branch)
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v4
+    - name: Upload Pages artifact
+      uses: actions/upload-pages-artifact@v3
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./public
-        publish_branch: gh-pages          # user sites serve from main’s root
+        path: ./public
 
+    - name: Deploy to GitHub Pages
+      uses: actions/deploy-pages@v4
+      id: deployment
