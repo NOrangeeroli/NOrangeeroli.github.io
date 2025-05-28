@@ -1,22 +1,43 @@
-name: Deploy Hugo site to GitHub Pages
+name: Build and deploy Hugo site to GitHub Pages
+
 on:
   push:
-    branches: [main]
+    branches: [main]        # or master—use your default branch name
 
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true      # pull the theme
-      - uses: peaceiris/actions-hugo@v2       # install Hugo
-        with:
-          hugo-version: '0.123.7'
-          extended: true
-      - run: hugo --minify
-      - uses: peaceiris/actions-gh-pages@v4   # publish to gh-pages
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
+    # 1.  Fetch your repo with submodules (theme)
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+        fetch-depth: 0
+
+    # 2.  Install Node (for PostCSS) – Hugo needs postcss-cli, autoprefixer, postcss-import
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+    - name: Install PostCSS plugins
+      run: |
+        npm ci || npm install --save-dev postcss-cli autoprefixer postcss-import
+
+    # 3.  Install Hugo Extended
+    - uses: peaceiris/actions-hugo@v2
+      with:
+        hugo-version: '0.147.6'
+        extended: true
+
+    # 4.  Build the site (outputs to ./public)
+    - run: hugo --minify
+
+    # 5.  Deploy the ./public folder to the special *root* of the repository
+    #     (for user/org pages we publish to the same repo's *root* branch)
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./public
+        publish_branch: main          # user sites serve from main’s root
 
