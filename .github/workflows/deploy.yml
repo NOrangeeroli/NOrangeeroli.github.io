@@ -29,14 +29,18 @@ jobs:
         hugo-version: '0.147.6'
         extended: true
 
-    # --- install Dart Sass (embedded) ---------------------------
     - name: Install Dart Sass
       run: |
+        VER=1.89.0
         curl -L \
-          https://github.com/sass/dart-sass/releases/download/1.89.0/dart-sass-1.89.0-linux-x64.tar.gz \
+          https://github.com/sass/dart-sass/releases/download/${VER}/dart-sass-${VER}-linux-x64.tar.gz \
           -o /tmp/dart-sass.tgz
-        sudo tar -xzf /tmp/dart-sass.tgz -C /usr/local/bin --strip-components=1 dart-sass/sass
-        sass --embedded --version          # sanity-check
+
+        sudo mkdir -p /usr/local/lib
+        sudo tar -xzf /tmp/dart-sass.tgz -C /usr/local/lib     # keeps full tree
+        sudo ln -sf /usr/local/lib/dart-sass/sass /usr/local/bin/sass
+
+        sass --embedded --version      # sanity-check
 
 
     # 4.  Build the site (outputs to ./public)
